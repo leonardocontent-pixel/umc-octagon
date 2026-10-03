@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, CSSProperties, FormEvent } from 'react';
-import { Bell, Check, ChevronRight, CircleUserRound, Crosshair, Flame, Medal, Menu, Plus, Shield, Sparkles, Swords, Trophy, Upload, X, Zap } from 'lucide-react';
+import { Bell, Check, ChevronRight, Crosshair, Eye, Flame, Handshake, HeartPulse, Medal, Menu, Plus, Shield, Sparkles, Swords, Target, Trophy, Upload, X, Zap } from 'lucide-react';
 
 type Fighter = { name: string; style: string; gender: 'M' | 'F'; sales: number; vgv: number; team: string; wins: string[]; photo?: string };
 type Archetype = 'PRECISÃO' | 'RECON' | 'SUPORTE' | 'GERENTE';
@@ -29,7 +29,14 @@ const archetypes: { name: Archetype; title: string; subtitle: string; icon: type
   { name: 'SUPORTE', title: 'SUPORTE', subtitle: 'Consistência para manter a equipe no round.', icon: Shield, gear: 'BANDANA UMC', accent: '#91a9b9' },
   { name: 'GERENTE', title: 'COMANDANTE', subtitle: 'Liderança, estratégia e ritmo de equipe.', icon: Medal, gear: 'UNIFORME DE LÍDER', accent: '#bb8275' },
 ];
-const skillOptions = ['FINALIZAÇÃO', 'KNOCKOUT', 'RESILIÊNCIA', 'VISÃO DE JOGO', 'NEGOCIAÇÃO', 'VELOCIDADE'];
+const skillOptions = [
+  { name: 'FINALIZAÇÃO', type: 'COMBATE', detail: 'Fecha a oportunidade com precisão.', stat: 'PRECISÃO', level: 92, icon: Target, accent: '#d2aa61' },
+  { name: 'KNOCKOUT', type: 'COMBATE', detail: 'Impacto alto na hora decisiva.', stat: 'IMPACTO', level: 96, icon: Flame, accent: '#d17a4f' },
+  { name: 'RESILIÊNCIA', type: 'MENTALIDADE', detail: 'Mantém o ritmo sob pressão.', stat: 'DEFESA', level: 88, icon: HeartPulse, accent: '#91aa9a' },
+  { name: 'VISÃO DE JOGO', type: 'ESTRATÉGIA', detail: 'Lê o cenário antes do próximo round.', stat: 'LEITURA', level: 91, icon: Eye, accent: '#8baabd' },
+  { name: 'NEGOCIAÇÃO', type: 'PERFORMANCE', detail: 'Transforma conversa em resultado.', stat: 'CONVERSÃO', level: 94, icon: Handshake, accent: '#c69c72' },
+  { name: 'VELOCIDADE', type: 'PERFORMANCE', detail: 'Responde rápido e ganha terreno.', stat: 'RITMO', level: 86, icon: Zap, accent: '#bdad6d' },
+];
 const styles = ['Muay Thai', 'Jiu-Jitsu', 'Kickboxing', 'Wrestling', 'Karatê', 'Taekwondo'];
 const money = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 const category = (n: number) => n >= 5 ? 'PESO PESADO' : n >= 3 ? 'MEIO-PESADO' : n >= 1 ? 'PESO LEVE' : 'ESTREANTE';
@@ -169,8 +176,8 @@ export default function Home() {
               <label className="full-width">EQUIPE<input value={profile.team} onChange={event => setProfile(current => ({ ...current, team: event.target.value.toUpperCase() }))} maxLength={24} placeholder="SUA EQUIPE" /></label>
             </div>
           </section>
-          <section className="builder-block"><div className="builder-step"><span>03</span><div><h2>DEFINA SUAS SKILLS <small>ESCOLHA ATÉ 3</small></h2><p>Combine habilidades de luta e performance comercial.</p></div></div>
-            <div className="skill-grid">{skillOptions.map((skill, index) => <button key={skill} type="button" onClick={() => toggleSkill(skill)} className={profile.skills.includes(skill) ? 'skill-chip chosen' : 'skill-chip'}><span>{String(index + 1).padStart(2, '0')}</span>{skill}{profile.skills.includes(skill) && <Check size={14} />}</button>)}</div>
+          <section className="builder-block"><div className="builder-step"><span>03</span><div><h2>DEFINA SUAS SKILLS <small>ESCOLHA ATÉ 3</small></h2><p>Combine combate, estratégia e performance comercial.</p></div><strong className="skill-counter">{String(profile.skills.length).padStart(2, '0')} <i>/ 03</i></strong></div>
+            <div className="skill-grid">{skillOptions.map((skill, index) => { const Icon = skill.icon; const selected = profile.skills.includes(skill.name); const locked = !selected && profile.skills.length >= 3; return <button key={skill.name} type="button" aria-pressed={selected} disabled={locked} onClick={() => toggleSkill(skill.name)} className={selected ? 'skill-card chosen' : 'skill-card'} style={{ '--skill-accent': skill.accent } as CSSProperties}><span className="skill-card-icon"><Icon size={18} /></span><span className="skill-index">0{index + 1}</span><span className="skill-type">{skill.type}</span><b>{skill.name}</b><small>{skill.detail}</small><span className="skill-meter-label">{skill.stat}<i>{skill.level}</i></span><span className="skill-meter"><i style={{ width: `${skill.level}%` }} /></span>{selected && <Check className="skill-check" size={15} />}</button>; })}</div>
           </section>
           <section className="builder-block upload-block"><div className="builder-step"><span>04</span><div><h2>ADICIONE SUA FOTO</h2><p>Uma foto aprovada deixa seu card pronto para entrar no ranking.</p></div></div>
             <label className="upload-control"><Upload size={18} /><span>{profile.photo ? 'TROCAR FOTO DO ATLETA' : 'ENVIAR FOTO DO ATLETA'}</span><small>JPG ou PNG · retrato frontal funciona melhor</small><input type="file" accept="image/png,image/jpeg,image/webp" onChange={uploadPhoto} /></label>
@@ -181,7 +188,7 @@ export default function Home() {
         <aside className="card-preview-panel"><div className="preview-label"><span><i className="status-dot" /> PRÉVIA AO VIVO</span><span>UMC / ATHLETE CARD</span></div>
           <article className="athlete-card" style={{ '--class-accent': selectedArchetype.accent } as CSSProperties}>
             <div className="athlete-card-top"><img src="/assets/umc-mark.svg" alt="UMC" /><span>OCTAGON<br />SERIES · 2026</span><span className="card-edition">01<br />/ 03</span></div>
-            <div className="athlete-art" style={profile.photo ? { backgroundImage: `linear-gradient(180deg,transparent 47%,#080909 100%),url(${profile.photo})`, backgroundPosition: 'center 30%', backgroundSize: 'cover' } : { backgroundImage: "linear-gradient(180deg,#08090910 25%,#080909d9 100%),url('/assets/umc-arena.webp')", backgroundPosition: 'center, 75% 34%', backgroundSize: 'cover, auto 175%' }}><div className="art-octagon"><span className="art-light" /><CircleUserRound size={82} strokeWidth={0.8} /></div><div className="art-class">{selectedArchetype.name}<br /><b>{selectedArchetype.gear}</b></div><span className="art-rank">FIGHTER<br /><b>ROOKIE</b></span></div>
+            <div className="athlete-art" style={profile.photo ? { backgroundImage: `linear-gradient(180deg,#08090912 12%,#080909c2 100%),url(${profile.photo})`, backgroundPosition: 'center, center 27%', backgroundSize: 'cover' } : { backgroundImage: "linear-gradient(180deg,#08090908 15%,#080909bc 100%),url('/assets/umc-fighter-portrait.webp')", backgroundPosition: 'center, center 24%', backgroundSize: 'cover' }}><div className="art-class">{selectedArchetype.name}<br /><b>{selectedArchetype.gear}</b></div><span className="art-rank">FIGHTER<br /><b>ROOKIE</b></span></div>
             <div className="athlete-card-info"><span className="card-nickname">{profile.nickname || 'THE CONTENDER'}</span><h3>{profile.name || 'SEU NOME'}</h3><div className="card-specs"><span>{profile.style}</span><i /><span>{profile.division}</span></div><div className="card-team"><span>TEAM</span><b>{profile.team || 'EQUIPE MENFE'}</b></div>
               <div className="card-skills-title"><span>SKILLS</span><small>{profile.skills.length}/03 EQUIPPED</small></div><div className="card-skills">{profile.skills.length ? profile.skills.map(skill => <span key={skill}><Zap size={11} />{skill}</span>) : <span className="empty-skill">ESCOLHA SUAS HABILIDADES</span>}</div>
             </div><div className="card-footer"><span>DISCIPLINA · ESTRATÉGIA · RESULTADO</span><b>UMC</b></div>
