@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'UMC — Ultimate Menfe Championship',
   description: 'Temporada UMC 2026 · Entre no octagon, monte seu fighter e dispute o cinturão.',
   applicationName: 'UMC Octagon',
+  icons: { icon: '/assets/umc-emblem.webp' },
   themeColor: '#090a0b',
 };
 export default function RootLayout({children}:{children:ReactNode}) { return <html lang="pt-BR"><body>{children}</body></html>; }

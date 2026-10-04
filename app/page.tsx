@@ -18,9 +18,9 @@ const initial: Fighter[] = [
 ];
 
 const events = [
-  { name: 'EVENTO 01', sub: 'QUALIFICATÓRIA', goal: 2500000, belt: 'CINTURÃO QUALIFIER', prize: 'PRIMEIRA VENDA · R$ 500' },
-  { name: 'EVENTO 02', sub: 'MAIN EVENT', goal: 3500000, belt: 'CINTURÃO MAIN EVENT', prize: 'PREMIAÇÃO META 2' },
-  { name: 'EVENTO 03', sub: 'UNIFICAÇÃO', goal: 5000000, belt: 'CINTURÃO UNIFICADO', prize: 'GRANDE FINAL' },
+  { name: 'EVENTO 01', sub: 'QUALIFICATÓRIA', goal: 2500000, belt: 'CINTURÃO QUALIFIER', prize: 'PRIMEIRA VENDA · R$ 500', badge: '/assets/event-qualifier.webp' },
+  { name: 'EVENTO 02', sub: 'MAIN EVENT', goal: 3500000, belt: 'CINTURÃO MAIN EVENT', prize: 'PREMIAÇÃO META 2', badge: '/assets/event-main.webp' },
+  { name: 'EVENTO 03', sub: 'UNIFICAÇÃO', goal: 5000000, belt: 'CINTURÃO UNIFICADO', prize: 'GRANDE FINAL', badge: '/assets/event-unified.webp' },
 ];
 
 const archetypes: { name: Archetype; title: string; subtitle: string; icon: typeof Crosshair; gear: string; accent: string }[] = [
@@ -40,6 +40,10 @@ const skillOptions = [
 const styles = ['Muay Thai', 'Jiu-Jitsu', 'Kickboxing', 'Wrestling', 'Karatê', 'Taekwondo'];
 const money = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 const category = (n: number) => n >= 5 ? 'PESO PESADO' : n >= 3 ? 'MEIO-PESADO' : n >= 1 ? 'PESO LEVE' : 'ESTREANTE';
+const styleAsset: Record<string, string> = { 'Muay Thai': 'muay-thai', 'Jiu-Jitsu': 'jiu-jitsu', Kickboxing: 'kickboxing', Wrestling: 'wrestling', 'Karatê': 'karate', Taekwondo: 'taekwondo' };
+const fighterAsset = (style: string, gender: 'M' | 'F') => `/assets/fighter-${gender === 'F' ? 'female' : 'male'}-${styleAsset[style] ?? 'muay-thai'}.webp`;
+const divisionAsset = (sales: number) => `/assets/division-${sales >= 5 ? 'heavy' : sales >= 3 ? 'middle' : 'light'}.webp`;
+const resultBadge = (win: string) => win.toLowerCase().includes('knockout') ? '/assets/badge-knockout.webp' : win.toLowerCase().includes('finalização') ? '/assets/badge-submission.webp' : '/assets/badge-points-win.webp';
 
 export default function Home() {
   const [fighters, setFighters] = useState(initial);
@@ -54,6 +58,7 @@ export default function Home() {
   const leads = ranked.slice(0, 2);
   const winner = ranked[0];
   const selectedArchetype = archetypes.find(item => item.name === profile.archetype) ?? archetypes[0];
+  const selectedPortrait = fighterAsset(profile.style, profile.division === 'FEMININO' ? 'F' : 'M');
 
   useEffect(() => {
     const savedProfile = window.localStorage.getItem('umc-fighter-card');
@@ -108,7 +113,7 @@ export default function Home() {
   return <main>
     <header className="topbar">
       <button className="menu-button" aria-label="Abrir menu"><Menu size={19} /></button>
-      <a href="#top" className="brand"><img src="/assets/umc-mark.svg" alt="UMC — Ultimate Menfe Championship" /></a>
+      <a href="#top" className="brand"><img src="/assets/umc-emblem.webp" alt="UMC — Ultimate Menfe Championship" /></a>
       <nav aria-label="Navegação principal">
         <button className={view === 'arena' ? 'nav-link active' : 'nav-link'} onClick={() => setView('arena')}>ARENA</button>
         <a className="nav-link" href="#eventos">EVENTOS</a>
@@ -129,21 +134,21 @@ export default function Home() {
           <p>Cada venda conta uma história.<br />Cada round aproxima você do cinturão.</p>
           <div className="hero-buttons"><a className="button-gold" href="#eventos">ACOMPANHAR A TEMPORADA <ChevronRight size={16} /></a><button className="button-quiet" onClick={() => setView('fighter')}>MONTAR MEU FIGHTER <Swords size={16} /></button></div>
         </div>
-        <div className="hero-lockup"><span>ULTIMATE</span><b>MENFE<br /><i>CHAMPIONSHIP</i></b><small>DISCIPLINA · ESTRATÉGIA · RESULTADO</small></div>
+        <div className="hero-lockup"><img src="/assets/umc-emblem.webp" alt="UMC — Ultimate Menfe Championship" /></div>
         <div className="hero-bottom"><span>UMC / 2026</span><span>THE FIGHT FOR GREATNESS</span><span>01 <i /> 03</span></div>
       </section>
       <section className="quick-stats">
         <div><span>NO CARD</span><strong>{String(fighters.length).padStart(2, '0')}</strong><small>EXECUTIVOS</small></div>
         <div><span>VGV DA TEMPORADA</span><strong>{money(total)}</strong><small>ACUMULADO</small></div>
         <div><span>EM DISPUTA</span><strong>03</strong><small>CINTURÕES</small></div>
-        <div className="stat-cta"><span>SEU PRÓXIMO ROUND COMEÇA AGORA</span><button onClick={() => setView('fighter')}>CRIAR MEU PERFIL <ChevronRight size={15} /></button></div>
+        <div className="stat-cta"><span>SEU PRÓXIMO ROUND COMEÇA AGORA</span><img src="/assets/badge-first-blood.webp" alt="First Blood — primeira venda do mês: R$ 500" /><button onClick={() => setView('fighter')}>CRIAR MEU PERFIL <ChevronRight size={15} /></button></div>
       </section>
       <section className="events-section" id="eventos">
         <div className="section-title-row"><div><div className="eyebrow">ROAD TO THE BELT <span className="eyebrow-line" /></div><h2>UMA TEMPORADA.<br /><em>TRÊS CONQUISTAS.</em></h2></div><div className="progress-total"><span>PROGRESSO GERAL</span><strong>{Math.min(Math.round(total / 5000000 * 100), 100)}<small>%</small></strong></div></div>
         <div className="season-progress"><div className="season-progress-fill" style={{ width: `${Math.min(total / 5000000 * 100, 100)}%` }} />{events.map((event, index) => <div key={event.name} className={total >= event.goal ? 'progress-marker won' : 'progress-marker'} style={{ left: `${event.goal / 5000000 * 100}%` }}><span>{String(index + 1).padStart(2, '0')}</span><small>{money(event.goal)}</small></div>)}</div>
         <div className="event-grid">{events.map((event, index) => <article className={total >= event.goal ? 'event-card completed' : 'event-card'} key={event.name}>
           <div className="event-card-head"><span>CHAPTER 0{index + 1}</span><span>{total >= event.goal ? 'CONCLUÍDO' : 'EM DISPUTA'}</span></div>
-          <div className="event-emblem"><div className="emblem-octagon"><Trophy size={23} /></div><span>UMC · OCTAGON SERIES</span></div>
+          <div className="event-emblem"><img src={event.badge} alt={`${event.name} UMC`} /></div>
           <h3>{event.sub}</h3><p>{event.belt}</p><div className="event-target"><span>ALVO DA ETAPA</span><strong>{money(event.goal)}</strong></div>
           <div className="event-footer">{total >= event.goal ? <>VENCEDOR DA ETAPA <b>{winner.name.toUpperCase()}</b></> : event.prize}</div>
         </article>)}</div>
@@ -151,16 +156,16 @@ export default function Home() {
       </section>
       <section className="main-event" id="main-event"><div className="main-event-head"><div className="eyebrow"><span className="status-dot" /> MAIN EVENT</div><span>DISPUTA PELO TOPO <b>· TOP 2 VGV</b></span></div>
         <div className="main-event-cards">{leads.map((fighter, index) => <article key={fighter.name} className={index ? 'headliner challenger' : 'headliner'}>
-          <div className="headliner-photo" style={{ backgroundImage: `url(${fighter.photo || '/assets/fighter-placeholder.svg'})` }}><span className="fighter-corner">{index ? 'BLUE CORNER' : 'RED CORNER'}</span><span className="fighter-seed">0{index + 1}</span></div>
+          <div className="headliner-photo" style={{ backgroundImage: `linear-gradient(180deg,#090a0b00 32%,#090a0be8 100%),url(${fighter.photo || fighterAsset(fighter.style, fighter.gender)})`, backgroundPosition: 'center, bottom center', backgroundSize: fighter.photo ? 'cover, cover' : 'cover, contain', backgroundRepeat: 'no-repeat' }}><span className="fighter-corner">{index ? 'BLUE CORNER' : 'RED CORNER'}</span><span className="fighter-seed">0{index + 1}</span></div>
           <div className="headliner-info"><span>{index ? 'CONTENDER' : 'CURRENT LEADER'}</span><h3>{fighter.name}</h3><small>{fighter.team} <i /> {fighter.style.toUpperCase()}</small><div className="headliner-vgv"><span>VGV ACUMULADO</span><b>{money(fighter.vgv)}</b></div></div>
         </article>)}<div className="versus-mark">VS</div></div>
         <div className="faceoff"><span>VANTAGEM ATUAL</span><b>{money(Math.abs(leads[0].vgv - leads[1].vgv))}</b><span>A PRÓXIMA VENDA MUDA O RANKING</span></div>
       </section>
       <section className="roster-section" id="fighters"><div className="section-title-row"><div><div className="eyebrow">O CARD OFICIAL <span className="eyebrow-line" /></div><h2>RANKING <em>DA ARENA.</em></h2></div><button className="button-quiet" onClick={() => setView('fighter')}>MEU FIGHTER <ChevronRight size={15} /></button></div>
-        <div className="roster-grid">{ranked.map((fighter, index) => <article className="roster-card" key={fighter.name}><div className="roster-photo" style={{ backgroundImage: `url(${fighter.photo || '/assets/fighter-placeholder.svg'})` }}><span className="roster-rank">#{String(index + 1).padStart(2, '0')}</span><span className="roster-weight">{category(fighter.sales)}</span><b>{fighter.team}</b></div><div className="roster-body"><div className="roster-name"><div><h3>{fighter.name}</h3><span>{fighter.style} · {fighter.gender === 'F' ? 'F' : 'M'}</span></div><Trophy size={17} /></div><div className="roster-vgv"><span>VGV ACUMULADO</span><b>{money(fighter.vgv)}</b></div><div className="roster-record"><span>CARTEL</span><b>{String(fighter.sales).padStart(2, '0')}—00</b><button onClick={() => { setForm(current => ({ ...current, fighter: fighter.name })); setModal(true); }}>+ REGISTRAR VENDA</button></div></div></article>)}</div>
+        <div className="roster-grid">{ranked.map((fighter, index) => <article className="roster-card" key={fighter.name}><div className="roster-photo" style={{ backgroundImage: `linear-gradient(180deg,#08090905 0%,#080909d9 100%),url(${fighter.photo || fighterAsset(fighter.style, fighter.gender)})`, backgroundPosition: 'center, bottom center', backgroundSize: fighter.photo ? 'cover, cover' : 'cover, contain', backgroundRepeat: 'no-repeat' }}><span className="roster-rank">#{String(index + 1).padStart(2, '0')}</span><img className="roster-weight-badge" src={divisionAsset(fighter.sales)} alt={category(fighter.sales)} /><b>{fighter.team}</b></div><div className="roster-body"><div className="roster-name"><div><h3>{fighter.name}</h3><span>{fighter.style} · {fighter.gender === 'F' ? 'F' : 'M'}</span></div><Trophy size={17} /></div><div className="roster-vgv"><span>VGV ACUMULADO</span><b>{money(fighter.vgv)}</b></div><div className="roster-record"><span>CARTEL</span><b>{String(fighter.sales).padStart(2, '0')}—00</b><button onClick={() => { setForm(current => ({ ...current, fighter: fighter.name })); setModal(true); }}>+ REGISTRAR VENDA</button></div></div></article>)}</div>
       </section>
       <section className="wins-section"><div className="section-title-row"><div><div className="eyebrow">DING DING · HISTÓRICO <span className="eyebrow-line" /></div><h2>ÚLTIMAS <em>VITÓRIAS.</em></h2></div><button className="button-gold" onClick={() => setModal(true)}>REGISTRAR RESULTADO <Plus size={15} /></button></div>
-        <div className="win-list">{ranked.flatMap(fighter => fighter.wins.map((win, index) => ({ fighter, win, index }))).slice(0, 7).map(({ fighter, win }, index) => <div className="win-row" key={`${fighter.name}-${index}`}><span className="win-flame"><Flame size={16} /></span><b>{fighter.name}</b><span className="win-type">{win}</span><span className="win-meta">{index === 0 ? 'HOJE' : `0${index + 1} OUT`}</span><ChevronRight size={15} /></div>)}</div>
+        <div className="win-list">{ranked.flatMap(fighter => fighter.wins.map((win, index) => ({ fighter, win, index }))).slice(0, 7).map(({ fighter, win }, index) => <div className="win-row" key={`${fighter.name}-${index}`}><img className="win-badge" src={resultBadge(win)} alt="" /><b>{fighter.name}</b><span className="win-type">{win}</span><span className="win-meta">{index === 0 ? 'HOJE' : `0${index + 1} OUT`}</span><ChevronRight size={15} /></div>)}</div>
       </section>
     </> : <section className="builder-page" id="top">
       <div className="builder-backdrop" />
@@ -187,8 +192,8 @@ export default function Home() {
         </div>
         <aside className="card-preview-panel"><div className="preview-label"><span><i className="status-dot" /> PRÉVIA AO VIVO</span><span>UMC / ATHLETE CARD</span></div>
           <article className="athlete-card" style={{ '--class-accent': selectedArchetype.accent } as CSSProperties}>
-            <div className="athlete-card-top"><img src="/assets/umc-mark.svg" alt="UMC" /><span>OCTAGON<br />SERIES · 2026</span><span className="card-edition">01<br />/ 03</span></div>
-            <div className="athlete-art" style={profile.photo ? { backgroundImage: `linear-gradient(180deg,#08090912 12%,#080909c2 100%),url(${profile.photo})`, backgroundPosition: 'center, center 27%', backgroundSize: 'cover' } : { backgroundImage: "linear-gradient(180deg,#08090908 15%,#080909bc 100%),url('/assets/umc-fighter-portrait.webp')", backgroundPosition: 'center, center 24%', backgroundSize: 'cover' }}><div className="art-class">{selectedArchetype.name}<br /><b>{selectedArchetype.gear}</b></div><span className="art-rank">FIGHTER<br /><b>ROOKIE</b></span></div>
+            <div className="athlete-card-top"><img src="/assets/umc-emblem.webp" alt="UMC" /><span>OCTAGON<br />SERIES · 2026</span><span className="card-edition">01<br />/ 03</span></div>
+            <div className="athlete-art" style={profile.photo ? { backgroundImage: `linear-gradient(180deg,#08090912 12%,#080909c2 100%),url(${profile.photo})`, backgroundPosition: 'center, center 27%', backgroundSize: 'cover' } : { backgroundImage: `linear-gradient(180deg,#08090908 15%,#080909bc 100%),url(${selectedPortrait})`, backgroundPosition: 'center, center 24%', backgroundSize: 'cover' }}><div className="art-class">{selectedArchetype.name}<br /><b>{selectedArchetype.gear}</b></div><span className="art-rank">FIGHTER<br /><b>ROOKIE</b></span></div>
             <div className="athlete-card-info"><span className="card-nickname">{profile.nickname || 'THE CONTENDER'}</span><h3>{profile.name || 'SEU NOME'}</h3><div className="card-specs"><span>{profile.style}</span><i /><span>{profile.division}</span></div><div className="card-team"><span>TEAM</span><b>{profile.team || 'EQUIPE MENFE'}</b></div>
               <div className="card-skills-title"><span>SKILLS</span><small>{profile.skills.length}/03 EQUIPPED</small></div><div className="card-skills">{profile.skills.length ? profile.skills.map(skill => <span key={skill}><Zap size={11} />{skill}</span>) : <span className="empty-skill">ESCOLHA SUAS HABILIDADES</span>}</div>
             </div><div className="card-footer"><span>DISCIPLINA · ESTRATÉGIA · RESULTADO</span><b>UMC</b></div>
@@ -198,7 +203,7 @@ export default function Home() {
       </div>
     </section>}
 
-    <footer className="site-footer"><img src="/assets/umc-mark.svg" alt="UMC" /><span>USO INTERNO · MENFE INCORPORADORA</span><span>THE FIGHT FOR GREATNESS · 2026</span></footer>
+    <footer className="site-footer"><img src="/assets/umc-emblem.webp" alt="UMC" /><span>USO INTERNO · MENFE INCORPORADORA</span><span>THE FIGHT FOR GREATNESS · 2026</span></footer>
     {notice && <div className="toast"><Check size={15} />{notice}</div>}
     {modal && <div className="modal-back" onClick={() => setModal(false)}><form className="modal" onSubmit={award} onClick={event => event.stopPropagation()}><button type="button" className="modal-close" onClick={() => setModal(false)} aria-label="Fechar"><X /></button><div className="eyebrow">DING DING · NOVA VITÓRIA</div><h2>REGISTRAR <em>RESULTADO.</em></h2><label>LUTADOR<select value={form.fighter} onChange={event => setForm(current => ({ ...current, fighter: event.target.value }))}>{fighters.map(fighter => <option key={fighter.name}>{fighter.name}</option>)}</select></label><label>VALOR DA VENDA (VGV)<input required type="number" min="1" value={form.value} onChange={event => setForm(current => ({ ...current, value: event.target.value }))} placeholder="Ex.: 249900" /></label><label>TIPO DE VITÓRIA<select value={form.result} onChange={event => setForm(current => ({ ...current, result: event.target.value }))}><option>Knockout · 1º round</option><option>Finalização · Submission</option><option>Vitória por pontos</option></select></label><label>HISTÓRIA DA LUTA <small>(OPCIONAL)</small><textarea value={form.note} onChange={event => setForm(current => ({ ...current, note: event.target.value }))} placeholder="Objeções, tempo de negociação, contexto…" /></label><button className="button-gold submit">CONFIRMAR VITÓRIA <ChevronRight size={16} /></button><p className="modal-help">Primeira venda do mês: premiação de R$ 500.</p></form></div>}
   </main>;
