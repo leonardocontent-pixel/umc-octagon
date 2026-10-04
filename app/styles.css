@@ -25,3 +25,78 @@
 .brand img{width:108px;height:66px;object-fit:contain;object-position:left center}.hero-lockup{right:5.5%;top:9%;width:min(37vw,510px);transform:rotate(-4deg);text-shadow:none}.hero-lockup img{display:block;width:100%;height:auto;filter:drop-shadow(0 18px 34px #000c)}.event-emblem{height:116px;margin-top:9px;display:flex;align-items:center;justify-content:flex-start}.event-emblem img{width:158px;height:116px;object-fit:contain;object-position:left center;filter:drop-shadow(0 8px 12px #0009)}.stat-cta img{width:104px;height:66px;object-fit:contain;align-self:flex-end;margin:-7px 0 -10px;filter:drop-shadow(0 5px 12px #0008)}.roster-weight-badge{position:absolute;z-index:1;top:3px;right:3px;width:112px;height:84px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 3px 7px #0008)}.win-row{min-height:73px}.win-badge{width:58px;height:58px;flex:0 0 58px;object-fit:contain;filter:drop-shadow(0 3px 8px #0009)}.athlete-card-top img{width:90px;height:42px;object-fit:contain;object-position:left center}.athlete-art[style*="fighter-"]{background-size:cover,contain!important;background-position:center,bottom center!important;background-repeat:no-repeat!important}.hero-lockup>span,.hero-lockup>b,.hero-lockup small{display:none}
 @media(max-width:760px){.brand img{width:96px;height:58px}.hero-lockup{right:1%;top:42%;width:49vw;opacity:.56;transform:rotate(-4deg)}.event-emblem{height:107px}.event-emblem img{height:106px;width:148px}.roster-weight-badge{width:94px;height:72px}.win-row{min-height:66px}.win-badge{width:48px;height:48px;flex-basis:48px}.athlete-card-top img{width:78px;height:38px}}
 @media(max-width:520px){.brand img{width:78px;height:50px}.hero-lockup{right:-4%;top:46%;width:57vw;opacity:.42}.event-emblem{height:98px}.event-emblem img{width:136px;height:98px}.stat-cta img{width:80px;height:52px}.roster-weight-badge{width:75px;height:58px;top:0;right:0}.win-badge{width:42px;height:42px;flex-basis:42px}.athlete-card-top img{width:75px;height:34px}}
+
+/* Fighter face cutout and premium fight-card composition */
+.fighter-figure-stage{position:absolute;z-index:0;left:50%;bottom:0;height:98%;width:auto;aspect-ratio:361/535;max-width:100%;transform:translateX(-50%);pointer-events:none}
+.fighter-figure{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 12px 15px #0009)}
+.fighter-face-window{position:absolute;z-index:2;left:36%;top:2.7%;width:28%;height:16.8%;overflow:hidden;border-radius:48% 48% 45% 45% / 39% 39% 57% 57%;background:#b78b72;box-shadow:0 0 0 2px #171514,0 0 0 3px #d0b47b,0 3px 9px #000a}
+.fighter-face-window img{width:100%;height:100%;object-fit:cover;object-position:50% 38%;transform-origin:center;display:block}
+.headliner-photo,.roster-photo,.athlete-art{background-image:radial-gradient(ellipse at 50% 40%,#33302a 0,#171817 56%,#0b0d0e 100%);isolation:isolate}
+.headliner-photo:after,.roster-photo:after{z-index:1;background:linear-gradient(0deg,#090a0bf5 0%,#090a0b38 38%,transparent 76%),linear-gradient(90deg,#090a0b45,transparent 70%);pointer-events:none}
+.headliner-photo .fighter-figure-stage{height:102%;left:51%}
+.headliner.challenger{border-color:#385575;background:linear-gradient(130deg,#151b22,#101213)}
+.headliner:not(.challenger){border-color:#725034;background:linear-gradient(130deg,#211814,#111314)}
+.headliner.challenger .headliner-photo{background-image:radial-gradient(ellipse at 50% 44%,#263a4e 0,#15191d 56%,#0b0d0e 100%)}
+.headliner:not(.challenger) .headliner-photo{background-image:radial-gradient(ellipse at 50% 44%,#493020 0,#1d1714 56%,#0b0d0e 100%)}
+.headliner-info{position:relative;z-index:2;align-self:stretch;display:flex;flex-direction:column;justify-content:center;padding:24px 22px}
+.headliner-info h3{font-size:clamp(20px,2vw,30px);line-height:1.05;text-transform:uppercase}
+.headliner-vgv{border-top:1px solid #c5a86a44;padding-top:13px;margin-top:18px}
+.versus-mark{width:60px;height:60px;display:grid;place-items:center;background:linear-gradient(145deg,#f1dfb0,#a67e3f);color:#10100e;border:4px solid #111;box-shadow:0 5px 22px #000b;font:900 23px 'Barlow Condensed';font-style:italic}
+.main-event{position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 32%,#3b2c1e55,transparent 55%),linear-gradient(180deg,#111313,#0c0e0f)}
+.main-event:before{content:'';position:absolute;inset:0;opacity:.18;pointer-events:none;background:repeating-conic-gradient(from 22.5deg at 50% 40%,#d9ba7d22 0deg 1deg,transparent 1deg 45deg);mask-image:linear-gradient(180deg,#000,transparent 80%)}
+.main-event>*{position:relative}
+.roster-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.roster-card{display:grid;grid-template-columns:39% 61%;min-height:264px;overflow:hidden;border-color:#51432e;background:linear-gradient(115deg,#1b1b18,#101213);box-shadow:0 12px 28px #0004}
+.roster-photo{height:auto;min-height:264px;background-image:radial-gradient(ellipse at 50% 30%,#3b3022,#161716 65%,#0b0d0e)}
+.roster-photo .fighter-figure-stage{height:100%;left:52%}
+.roster-photo:after{background:linear-gradient(0deg,#090a0bdc,transparent 47%),linear-gradient(90deg,transparent 68%,#101213 100%)}
+.roster-body{padding:19px 18px;display:flex;flex-direction:column;justify-content:center}
+.roster-name h3{font-size:20px}
+.roster-record{margin-top:auto;padding-top:12px}
+.roster-weight-badge{z-index:2;top:7px;right:5px;width:86px;height:67px}
+.athlete-art .fighter-figure-stage{height:106%;left:50%}
+.athlete-art:before{z-index:1;pointer-events:none}
+.athlete-art .art-class,.athlete-art .art-rank{z-index:2}
+.modality-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:17px}
+.modality-card{position:relative;min-height:185px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:10px 8px 11px;background:linear-gradient(155deg,#1b1c1a,#101213);border:1px solid #32312c;color:#eee;text-align:center;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s}
+.modality-card:hover{transform:translateY(-3px);border-color:#a88950}
+.modality-card.selected{border-color:#dfbd79;box-shadow:inset 0 0 0 1px #dfbd7955,0 7px 25px #bd94451b}
+.modality-card>.fighter-figure-stage{position:absolute;left:50%;bottom:28px;height:143px;width:auto;aspect-ratio:361/535;transform:translateX(-50%)}
+.modality-card .fighter-figure{filter:drop-shadow(0 4px 7px #000a)}
+.modality-card .fighter-face-window{box-shadow:0 0 0 1px #111,0 0 0 2px #c3a86f}
+.modality-number{position:absolute;z-index:2;left:9px;top:8px;color:#bba878;font:700 9px 'Barlow Condensed';letter-spacing:1px}
+.modality-name,.modality-card>small{position:relative;z-index:2;text-shadow:0 1px 8px #000}
+.modality-name{font:700 13px 'Barlow Condensed';letter-spacing:1.4px;text-transform:uppercase}
+.modality-card>small{display:flex;align-items:center;gap:4px;margin-top:4px;color:#b9b4aa;font:700 8px 'Barlow Condensed';letter-spacing:1px}
+.modality-check{position:absolute;z-index:3;right:8px;top:8px;color:#e3c77f;opacity:0}
+.modality-card.selected .modality-check{opacity:1}
+.gender-picker{display:flex;gap:8px;margin:18px 0 3px}
+.gender-option{display:flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid #393a36;background:#111313;color:#aaa;font:700 10px 'Barlow Condensed';letter-spacing:1.3px;cursor:pointer}
+.gender-option span{font-size:15px}
+.gender-option.active{border-color:#d1ae69;color:#f1dfb0;background:#29241b}
+.face-controls{display:grid;grid-template-columns:170px 1fr;gap:19px;align-items:center;margin-top:18px;padding:14px;border:1px solid #33332f;background:#101212}
+.face-control-preview{height:224px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 34%,#373027,#111313 70%)}
+.face-control-preview .fighter-figure-stage{height:100%}
+.face-control-preview>span{position:absolute;z-index:3;left:7px;bottom:7px;padding:4px 6px;background:#080909b8;color:#e2c989;font:700 8px 'Barlow Condensed';letter-spacing:1px}
+.face-sliders{display:grid;gap:16px}
+.face-sliders label{display:grid;gap:7px;color:#bdb7a9;font:700 9px 'Barlow Condensed';letter-spacing:1px}
+.face-sliders input{width:100%;accent-color:#c9a65e}
+.upload-control{cursor:pointer}
+.save-note{color:#99958a}
+.season-progress-fill{position:relative;overflow:hidden;background:linear-gradient(90deg,#8a6336,#efdba9 60%,#c59c51);box-shadow:0 0 21px #cfaa6266;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.season-progress-fill:after{content:'';position:absolute;inset:0;width:35%;background:linear-gradient(90deg,transparent,#fff7,transparent);transform:skewX(-25deg);animation:progress-glint 3.8s ease-in-out infinite}
+.event-card{animation:card-rise .7s both;transition:transform .25s,border-color .25s,box-shadow .25s}
+.event-card:nth-child(2){animation-delay:.1s}.event-card:nth-child(3){animation-delay:.2s}
+.event-card:hover{transform:translateY(-5px);border-color:#8b7145;box-shadow:0 16px 35px #0005}
+.hero-image{animation:arena-breathe 24s ease-in-out infinite alternate}
+.hero-grid{animation:grid-glow 8s ease-in-out infinite alternate}
+.headliner{animation:card-rise .7s both}
+.headliner.challenger{animation-delay:.12s}
+@keyframes progress-glint{0%,35%{left:-40%}75%,100%{left:120%}}
+@keyframes card-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes arena-breathe{from{transform:scale(1.01)}to{transform:scale(1.055)}}
+@keyframes grid-glow{from{opacity:.2}to{opacity:.42}}
+@media(max-width:900px){.roster-grid{grid-template-columns:1fr}.roster-card{min-height:240px}.roster-photo{min-height:240px}}
+@media(max-width:700px){.main-event-cards{grid-template-columns:1fr;gap:12px}.headliner{min-height:235px;grid-template-columns:40% 1fr}.headliner-photo{min-height:233px}.versus-mark{top:50%;left:50%;width:47px;height:47px;font-size:18px}.roster-grid{grid-template-columns:1fr}.modality-card{min-height:167px}.modality-card>.fighter-figure-stage{height:127px}}
+@media(max-width:520px){.modality-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.face-controls{grid-template-columns:118px 1fr;gap:12px;padding:10px}.face-control-preview{height:177px}.roster-card{grid-template-columns:38% 62%;min-height:225px}.roster-photo{min-height:225px}.roster-body{padding:13px 12px}.roster-name h3{font-size:17px}.roster-vgv b{font-size:16px}.headliner-info{padding:16px 14px}.headliner-info h3{font-size:23px}}
+@media(prefers-reduced-motion:reduce){.hero-image,.hero-grid,.event-card,.headliner,.season-progress-fill:after{animation:none!important;transition:none!important}}

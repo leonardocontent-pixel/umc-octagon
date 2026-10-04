@@ -2,10 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, CSSProperties, FormEvent } from 'react';
-import { Bell, Check, ChevronRight, Crosshair, Eye, Flame, Handshake, HeartPulse, Medal, Menu, Plus, Shield, Sparkles, Swords, Target, Trophy, Upload, X, Zap } from 'lucide-react';
+import { Bell, Check, ChevronRight, Eye, Flame, Handshake, HeartPulse, Menu, Plus, Sparkles, Swords, Target, Trophy, Upload, X, Zap } from 'lucide-react';
 
-type Fighter = { name: string; style: string; gender: 'M' | 'F'; sales: number; vgv: number; team: string; wins: string[]; photo?: string };
-type Archetype = 'PRECISÃO' | 'RECON' | 'SUPORTE' | 'GERENTE';
+type Fighter = { name: string; style: string; gender: 'M' | 'F'; sales: number; vgv: number; team: string; wins: string[]; photo?: string; faceCrop?: { x: number; y: number; zoom: number } };
 type View = 'arena' | 'fighter';
 
 const initial: Fighter[] = [
@@ -23,12 +22,6 @@ const events = [
   { name: 'EVENTO 03', sub: 'UNIFICAÇÃO', goal: 5000000, belt: 'CINTURÃO UNIFICADO', prize: 'GRANDE FINAL', badge: '/assets/event-unified.webp' },
 ];
 
-const archetypes: { name: Archetype; title: string; subtitle: string; icon: typeof Crosshair; gear: string; accent: string }[] = [
-  { name: 'PRECISÃO', title: 'ATIRADOR', subtitle: 'Foco no alvo. Execução cirúrgica.', icon: Crosshair, gear: 'GHILLIE TÁTICA', accent: '#c5a15e' },
-  { name: 'RECON', title: 'RECONHECIMENTO', subtitle: 'Leitura de cenário e antecipação.', icon: Zap, gear: 'BONÉ DE COMBATE', accent: '#8b9a85' },
-  { name: 'SUPORTE', title: 'SUPORTE', subtitle: 'Consistência para manter a equipe no round.', icon: Shield, gear: 'BANDANA UMC', accent: '#91a9b9' },
-  { name: 'GERENTE', title: 'COMANDANTE', subtitle: 'Liderança, estratégia e ritmo de equipe.', icon: Medal, gear: 'UNIFORME DE LÍDER', accent: '#bb8275' },
-];
 const skillOptions = [
   { name: 'FINALIZAÇÃO', type: 'COMBATE', detail: 'Fecha a oportunidade com precisão.', stat: 'PRECISÃO', level: 92, icon: Target, accent: '#d2aa61' },
   { name: 'KNOCKOUT', type: 'COMBATE', detail: 'Impacto alto na hora decisiva.', stat: 'IMPACTO', level: 96, icon: Flame, accent: '#d17a4f' },
@@ -42,6 +35,13 @@ const money = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency',
 const category = (n: number) => n >= 5 ? 'PESO PESADO' : n >= 3 ? 'MEIO-PESADO' : n >= 1 ? 'PESO LEVE' : 'ESTREANTE';
 const styleAsset: Record<string, string> = { 'Muay Thai': 'muay-thai', 'Jiu-Jitsu': 'jiu-jitsu', Kickboxing: 'kickboxing', Wrestling: 'wrestling', 'Karatê': 'karate', Taekwondo: 'taekwondo' };
 const fighterAsset = (style: string, gender: 'M' | 'F') => `/assets/fighter-${gender === 'F' ? 'female' : 'male'}-${styleAsset[style] ?? 'muay-thai'}.webp`;
+function FighterFigure({ style, gender, face, crop, className = '' }: { style: string; gender: 'M' | 'F'; face?: string; crop?: { x: number; y: number; zoom: number }; className?: string }) {
+  const frame = crop ?? { x: 50, y: 38, zoom: 1.35 };
+  return <div className={`fighter-figure-stage ${className}`}>
+    <img className="fighter-figure" src={fighterAsset(style, gender)} alt="" />
+    {face && <div className="fighter-face-window"><img src={face} alt="Rosto do executivo" style={{ objectPosition: `${frame.x}% ${frame.y}%`, transform: `scale(${frame.zoom})` }} /></div>}
+  </div>;
+}
 const divisionAsset = (sales: number) => `/assets/division-${sales >= 5 ? 'heavy' : sales >= 3 ? 'middle' : 'light'}.webp`;
 const resultBadge = (win: string) => win.toLowerCase().includes('knockout') ? '/assets/badge-knockout.webp' : win.toLowerCase().includes('finalização') ? '/assets/badge-submission.webp' : '/assets/badge-points-win.webp';
 
@@ -51,20 +51,20 @@ export default function Home() {
   const [modal, setModal] = useState(false);
   const [notice, setNotice] = useState('');
   const [profileSaved, setProfileSaved] = useState(false);
-  const [profile, setProfile] = useState({ name: 'SEU NOME', nickname: 'THE CONTENDER', archetype: 'PRECISÃO' as Archetype, style: 'Muay Thai', division: 'MASCULINO', team: 'EQUIPE MENFE', skills: ['KNOCKOUT', 'NEGOCIAÇÃO'], photo: '' });
+  const [profile, setProfile] = useState({ name: 'SEU NOME', nickname: 'THE CONTENDER', style: 'Muay Thai', division: 'MASCULINO', team: 'EQUIPE MENFE', skills: ['KNOCKOUT', 'NEGOCIAÇÃO'], photo: '', faceCrop: { x: 50, y: 38, zoom: 1.35 } });
   const [form, setForm] = useState({ fighter: initial[0].name, value: '', result: 'Knockout · 1º round', note: '' });
   const ranked = useMemo(() => [...fighters].sort((a, b) => b.vgv - a.vgv), [fighters]);
   const total = ranked.reduce((sum, fighter) => sum + fighter.vgv, 0);
   const leads = ranked.slice(0, 2);
   const winner = ranked[0];
-  const selectedArchetype = archetypes.find(item => item.name === profile.archetype) ?? archetypes[0];
-  const selectedPortrait = fighterAsset(profile.style, profile.division === 'FEMININO' ? 'F' : 'M');
+  const selectedGender = profile.division === 'FEMININO' ? 'F' : 'M';
 
   useEffect(() => {
     const savedProfile = window.localStorage.getItem('umc-fighter-card');
     if (!savedProfile) return;
     try {
-      setProfile(JSON.parse(savedProfile));
+      const saved = JSON.parse(savedProfile);
+      setProfile(current => ({ ...current, ...saved, skills: saved.skills ?? current.skills, faceCrop: saved.faceCrop ?? current.faceCrop }));
       setProfileSaved(true);
     } catch {
       window.localStorage.removeItem('umc-fighter-card');
@@ -76,17 +76,19 @@ export default function Home() {
   const uploadPhoto = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith('image/')) { notify('ESCOLHA UMA FOTO EM FORMATO DE IMAGEM'); return; }
+    if (file.size > 8 * 1024 * 1024) { notify('A FOTO PRECISA TER ATÉ 8 MB'); event.target.value = ''; return; }
     const reader = new FileReader();
     reader.onload = () => {
       const source = new Image();
       source.onload = () => {
-        const scale = Math.min(1, 900 / source.width);
+        const scale = Math.min(1, 720 / source.width);
         const canvas = document.createElement('canvas');
         canvas.width = Math.round(source.width * scale);
         canvas.height = Math.round(source.height * scale);
         const context = canvas.getContext('2d');
         context?.drawImage(source, 0, 0, canvas.width, canvas.height);
-        setProfile(current => ({ ...current, photo: canvas.toDataURL('image/jpeg', 0.78) }));
+        setProfile(current => ({ ...current, photo: canvas.toDataURL('image/jpeg', 0.78), faceCrop: current.faceCrop ?? { x: 50, y: 38, zoom: 1.35 } }));
       };
       source.src = String(reader.result);
     };
@@ -96,7 +98,7 @@ export default function Home() {
     try {
       window.localStorage.setItem('umc-fighter-card', JSON.stringify(profile));
       setProfileSaved(true);
-      notify('FIGHTER CARD SALVO NESTE DISPOSITIVO');
+      notify('FIGHTER CARD E ENQUADRAMENTO SALVOS NESTE NAVEGADOR');
     } catch {
       notify('NÃO FOI POSSÍVEL SALVAR. TENTE UMA FOTO MENOR.');
     }
@@ -156,13 +158,13 @@ export default function Home() {
       </section>
       <section className="main-event" id="main-event"><div className="main-event-head"><div className="eyebrow"><span className="status-dot" /> MAIN EVENT</div><span>DISPUTA PELO TOPO <b>· TOP 2 VGV</b></span></div>
         <div className="main-event-cards">{leads.map((fighter, index) => <article key={fighter.name} className={index ? 'headliner challenger' : 'headliner'}>
-          <div className="headliner-photo" style={{ backgroundImage: `linear-gradient(180deg,#090a0b00 32%,#090a0be8 100%),url(${fighter.photo || fighterAsset(fighter.style, fighter.gender)})`, backgroundPosition: 'center, bottom center', backgroundSize: fighter.photo ? 'cover, cover' : 'cover, contain', backgroundRepeat: 'no-repeat' }}><span className="fighter-corner">{index ? 'BLUE CORNER' : 'RED CORNER'}</span><span className="fighter-seed">0{index + 1}</span></div>
+          <div className="headliner-photo"><FighterFigure style={fighter.style} gender={fighter.gender} face={fighter.photo} crop={fighter.faceCrop} /><span className="fighter-corner">{index ? 'BLUE CORNER' : 'RED CORNER'}</span><span className="fighter-seed">0{index + 1}</span></div>
           <div className="headliner-info"><span>{index ? 'CONTENDER' : 'CURRENT LEADER'}</span><h3>{fighter.name}</h3><small>{fighter.team} <i /> {fighter.style.toUpperCase()}</small><div className="headliner-vgv"><span>VGV ACUMULADO</span><b>{money(fighter.vgv)}</b></div></div>
         </article>)}<div className="versus-mark">VS</div></div>
         <div className="faceoff"><span>VANTAGEM ATUAL</span><b>{money(Math.abs(leads[0].vgv - leads[1].vgv))}</b><span>A PRÓXIMA VENDA MUDA O RANKING</span></div>
       </section>
       <section className="roster-section" id="fighters"><div className="section-title-row"><div><div className="eyebrow">O CARD OFICIAL <span className="eyebrow-line" /></div><h2>RANKING <em>DA ARENA.</em></h2></div><button className="button-quiet" onClick={() => setView('fighter')}>MEU FIGHTER <ChevronRight size={15} /></button></div>
-        <div className="roster-grid">{ranked.map((fighter, index) => <article className="roster-card" key={fighter.name}><div className="roster-photo" style={{ backgroundImage: `linear-gradient(180deg,#08090905 0%,#080909d9 100%),url(${fighter.photo || fighterAsset(fighter.style, fighter.gender)})`, backgroundPosition: 'center, bottom center', backgroundSize: fighter.photo ? 'cover, cover' : 'cover, contain', backgroundRepeat: 'no-repeat' }}><span className="roster-rank">#{String(index + 1).padStart(2, '0')}</span><img className="roster-weight-badge" src={divisionAsset(fighter.sales)} alt={category(fighter.sales)} /><b>{fighter.team}</b></div><div className="roster-body"><div className="roster-name"><div><h3>{fighter.name}</h3><span>{fighter.style} · {fighter.gender === 'F' ? 'F' : 'M'}</span></div><Trophy size={17} /></div><div className="roster-vgv"><span>VGV ACUMULADO</span><b>{money(fighter.vgv)}</b></div><div className="roster-record"><span>CARTEL</span><b>{String(fighter.sales).padStart(2, '0')}—00</b><button onClick={() => { setForm(current => ({ ...current, fighter: fighter.name })); setModal(true); }}>+ REGISTRAR VENDA</button></div></div></article>)}</div>
+        <div className="roster-grid">{ranked.map((fighter, index) => <article className="roster-card" key={fighter.name}><div className="roster-photo"><FighterFigure style={fighter.style} gender={fighter.gender} face={fighter.photo} crop={fighter.faceCrop} /><span className="roster-rank">#{String(index + 1).padStart(2, '0')}</span><img className="roster-weight-badge" src={divisionAsset(fighter.sales)} alt={category(fighter.sales)} /><b>{fighter.team}</b></div><div className="roster-body"><div className="roster-name"><div><h3>{fighter.name}</h3><span>{fighter.style} · {fighter.gender === 'F' ? 'F' : 'M'}</span></div><Trophy size={17} /></div><div className="roster-vgv"><span>VGV ACUMULADO</span><b>{money(fighter.vgv)}</b></div><div className="roster-record"><span>CARTEL</span><b>{String(fighter.sales).padStart(2, '0')}—00</b><button onClick={() => { setForm(current => ({ ...current, fighter: fighter.name })); setModal(true); }}>+ REGISTRAR VENDA</button></div></div></article>)}</div>
       </section>
       <section className="wins-section"><div className="section-title-row"><div><div className="eyebrow">DING DING · HISTÓRICO <span className="eyebrow-line" /></div><h2>ÚLTIMAS <em>VITÓRIAS.</em></h2></div><button className="button-gold" onClick={() => setModal(true)}>REGISTRAR RESULTADO <Plus size={15} /></button></div>
         <div className="win-list">{ranked.flatMap(fighter => fighter.wins.map((win, index) => ({ fighter, win, index }))).slice(0, 7).map(({ fighter, win }, index) => <div className="win-row" key={`${fighter.name}-${index}`}><img className="win-badge" src={resultBadge(win)} alt="" /><b>{fighter.name}</b><span className="win-type">{win}</span><span className="win-meta">{index === 0 ? 'HOJE' : `0${index + 1} OUT`}</span><ChevronRight size={15} /></div>)}</div>
@@ -172,33 +174,34 @@ export default function Home() {
       <div className="builder-heading"><button className="back-link" onClick={() => setView('arena')}>← VOLTAR À ARENA</button><div className="eyebrow"><span className="eyebrow-line" /> PERSONALIZE SEU ATLETA</div><h1>CRIE SEU <em>FIGHTER.</em></h1><p>Monte sua identidade, escolha suas skills e veja seu card ganhar forma.</p></div>
       <div className="builder-layout">
         <div className="builder-form">
-          <section className="builder-block"><div className="builder-step"><span>01</span><div><h2>ESCOLHA SUA CLASSE</h2><p>Seu estilo define como você entra no octagon.</p></div></div>
-            <div className="archetype-grid">{archetypes.map(item => { const Icon = item.icon; return <button type="button" key={item.name} onClick={() => setProfile(current => ({ ...current, archetype: item.name }))} className={profile.archetype === item.name ? 'archetype-card selected' : 'archetype-card'} style={{ '--class-accent': item.accent } as CSSProperties}><span className="class-icon"><Icon size={20} /></span><span className="class-name">{item.name}</span><b>{item.title}</b><small>{item.subtitle}</small><i>{item.gear}</i>{profile.archetype === item.name && <Check className="class-check" size={16} />}</button>; })}</div>
+          <section className="builder-block builder-modality-block"><div className="builder-step"><span>01</span><div><h2>ESCOLHA SUA MODALIDADE</h2><p>Escolha o estilo e o avatar acompanha o sexo selecionado.</p></div></div>
+            <div className="gender-picker" role="group" aria-label="Sexo do avatar">{(['MASCULINO', 'FEMININO'] as const).map(gender => <button type="button" key={gender} aria-pressed={profile.division === gender} className={profile.division === gender ? 'gender-option active' : 'gender-option'} onClick={() => setProfile(current => ({ ...current, division: gender }))}><span>{gender === 'MASCULINO' ? '♂' : '♀'}</span>{gender}</button>)}</div>
+            <div className="modality-grid">{styles.map((style, index) => <button type="button" key={style} aria-pressed={profile.style === style} onClick={() => setProfile(current => ({ ...current, style }))} className={profile.style === style ? 'modality-card selected' : 'modality-card'}><span className="modality-number">0{index + 1}</span><FighterFigure style={style} gender={selectedGender} face={profile.photo} crop={profile.faceCrop} /><span className="modality-name">{style}</span><small><Swords size={12} /> MODALIDADE</small><Check className="modality-check" size={15} /></button>)}</div>
           </section>
           <section className="builder-block"><div className="builder-step"><span>02</span><div><h2>MONTE SEU CARTEL</h2><p>Os detalhes que deixam seu atleta com a sua cara.</p></div></div>
             <div className="form-grid"><label>NOME NO CARD<input value={profile.name} onChange={event => setProfile(current => ({ ...current, name: event.target.value.toUpperCase() }))} maxLength={22} placeholder="SEU NOME" /></label><label>APELIDO DE ARENA<input value={profile.nickname} onChange={event => setProfile(current => ({ ...current, nickname: event.target.value.toUpperCase() }))} maxLength={22} placeholder="THE CONTENDER" /></label>
-              <label>MODALIDADE<select value={profile.style} onChange={event => setProfile(current => ({ ...current, style: event.target.value }))}>{styles.map(style => <option key={style}>{style}</option>)}</select></label><label>DIVISÃO<select value={profile.division} onChange={event => setProfile(current => ({ ...current, division: event.target.value }))}><option>MASCULINO</option><option>FEMININO</option></select></label>
               <label className="full-width">EQUIPE<input value={profile.team} onChange={event => setProfile(current => ({ ...current, team: event.target.value.toUpperCase() }))} maxLength={24} placeholder="SUA EQUIPE" /></label>
             </div>
           </section>
           <section className="builder-block"><div className="builder-step"><span>03</span><div><h2>DEFINA SUAS SKILLS <small>ESCOLHA ATÉ 3</small></h2><p>Combine combate, estratégia e performance comercial.</p></div><strong className="skill-counter">{String(profile.skills.length).padStart(2, '0')} <i>/ 03</i></strong></div>
             <div className="skill-grid">{skillOptions.map((skill, index) => { const Icon = skill.icon; const selected = profile.skills.includes(skill.name); const locked = !selected && profile.skills.length >= 3; return <button key={skill.name} type="button" aria-pressed={selected} disabled={locked} onClick={() => toggleSkill(skill.name)} className={selected ? 'skill-card chosen' : 'skill-card'} style={{ '--skill-accent': skill.accent } as CSSProperties}><span className="skill-card-icon"><Icon size={18} /></span><span className="skill-index">0{index + 1}</span><span className="skill-type">{skill.type}</span><b>{skill.name}</b><small>{skill.detail}</small><span className="skill-meter-label">{skill.stat}<i>{skill.level}</i></span><span className="skill-meter"><i style={{ width: `${skill.level}%` }} /></span>{selected && <Check className="skill-check" size={15} />}</button>; })}</div>
           </section>
-          <section className="builder-block upload-block"><div className="builder-step"><span>04</span><div><h2>ADICIONE SUA FOTO</h2><p>Uma foto aprovada deixa seu card pronto para entrar no ranking.</p></div></div>
-            <label className="upload-control"><Upload size={18} /><span>{profile.photo ? 'TROCAR FOTO DO ATLETA' : 'ENVIAR FOTO DO ATLETA'}</span><small>JPG ou PNG · retrato frontal funciona melhor</small><input type="file" accept="image/png,image/jpeg,image/webp" onChange={uploadPhoto} /></label>
+          <section className="builder-block upload-block"><div className="builder-step"><span>04</span><div><h2>ENCAIXE SEU ROSTO</h2><p>Envie uma foto frontal. O rosto entra no avatar como um recorte estilo JibJab.</p></div></div>
+            <label className="upload-control"><Upload size={18} /><span>{profile.photo ? 'TROCAR FOTO DO ROSTO' : 'ENVIAR FOTO DO ROSTO'}</span><small>JPG, PNG ou WEBP · até 8 MB · prefira um rosto de frente</small><input type="file" accept="image/png,image/jpeg,image/webp" onChange={uploadPhoto} /></label>
+            {profile.photo && <div className="face-controls"><div className="face-control-preview"><FighterFigure style={profile.style} gender={selectedGender} face={profile.photo} crop={profile.faceCrop} /><span>PRÉVIA DO RECORTE</span></div><div className="face-sliders">{([{ key: 'x', label: 'ESQUERDA / DIREITA', min: 0, max: 100, step: 1 }, { key: 'y', label: 'ALTURA DO ROSTO', min: 0, max: 100, step: 1 }, { key: 'zoom', label: 'ZOOM', min: 1, max: 2.4, step: 0.05 }] as const).map(control => <label key={control.key}>{control.label}<input aria-label={control.label} type="range" min={control.min} max={control.max} step={control.step} value={profile.faceCrop[control.key]} onChange={event => setProfile(current => ({ ...current, faceCrop: { ...current.faceCrop, [control.key]: Number(event.target.value) } }))} /></label>)}</div></div>}
           </section>
           <button className="button-gold save-profile" onClick={saveProfile}>{profileSaved ? 'CARD SALVO NO DISPOSITIVO' : 'SALVAR MEU FIGHTER CARD'} <Check size={16} /></button>
-          <p className="save-note">Prévia demonstrativa. A gravação no perfil Supabase será conectada na etapa de integração do aplicativo.</p>
+          <p className="save-note">Seu rosto recortado, o enquadramento e o card são salvos juntos neste navegador.</p>
         </div>
         <aside className="card-preview-panel"><div className="preview-label"><span><i className="status-dot" /> PRÉVIA AO VIVO</span><span>UMC / ATHLETE CARD</span></div>
-          <article className="athlete-card" style={{ '--class-accent': selectedArchetype.accent } as CSSProperties}>
+          <article className="athlete-card">
             <div className="athlete-card-top"><img src="/assets/umc-emblem.webp" alt="UMC" /><span>OCTAGON<br />SERIES · 2026</span><span className="card-edition">01<br />/ 03</span></div>
-            <div className="athlete-art" style={profile.photo ? { backgroundImage: `linear-gradient(180deg,#08090912 12%,#080909c2 100%),url(${profile.photo})`, backgroundPosition: 'center, center 27%', backgroundSize: 'cover' } : { backgroundImage: `linear-gradient(180deg,#08090908 15%,#080909bc 100%),url(${selectedPortrait})`, backgroundPosition: 'center, center 24%', backgroundSize: 'cover' }}><div className="art-class">{selectedArchetype.name}<br /><b>{selectedArchetype.gear}</b></div><span className="art-rank">FIGHTER<br /><b>ROOKIE</b></span></div>
+            <div className="athlete-art"><FighterFigure style={profile.style} gender={selectedGender} face={profile.photo} crop={profile.faceCrop} /><div className="art-class"><Swords size={13} /> {profile.style.toUpperCase()}<br /><b>{profile.division}</b></div><span className="art-rank">FIGHTER<br /><b>ROOKIE</b></span></div>
             <div className="athlete-card-info"><span className="card-nickname">{profile.nickname || 'THE CONTENDER'}</span><h3>{profile.name || 'SEU NOME'}</h3><div className="card-specs"><span>{profile.style}</span><i /><span>{profile.division}</span></div><div className="card-team"><span>TEAM</span><b>{profile.team || 'EQUIPE MENFE'}</b></div>
               <div className="card-skills-title"><span>SKILLS</span><small>{profile.skills.length}/03 EQUIPPED</small></div><div className="card-skills">{profile.skills.length ? profile.skills.map(skill => <span key={skill}><Zap size={11} />{skill}</span>) : <span className="empty-skill">ESCOLHA SUAS HABILIDADES</span>}</div>
             </div><div className="card-footer"><span>DISCIPLINA · ESTRATÉGIA · RESULTADO</span><b>UMC</b></div>
           </article>
-          <div className="preview-status"><span><Check size={14} /> CLASSE EQUIPADA: {profile.archetype}</span><span>PERFIL VISUAL</span></div>
+          <div className="preview-status"><span><Check size={14} /> {profile.photo ? 'ROSTO ENCAIXADO NO AVATAR' : 'ENVIE SEU ROSTO PARA PERSONALIZAR'}</span><span>PERFIL VISUAL</span></div>
         </aside>
       </div>
     </section>}
